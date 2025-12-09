@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Getränke-App</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body, button, input, span {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #buttons {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
+      grid-auto-rows: 1fr;
+      gap: 12px;
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .btn {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      border-radius: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover::before { opacity: 1; }
+    .btn:active { 
+      transform: scale(0.96);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(10px) scale(0.95);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    #bottombar {
+      height: 80px;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .barBtn {
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 24px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 14px;
+      color: white;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .barBtn:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .barBtn:active { 
+      transform: translateY(0);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .barBtn.back {
+      background: linear-gradient(135deg, #8b1f1f 0%, #6b1515 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .barBtn.back:hover {
+      background: linear-gradient(135deg, #9b2f2f 0%, #7b1f1f 100%);
+    }
+
+    #numberOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.97);
+      backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    #numberText {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-align: center;
+      color: #fff;
+    }
+
+    #numberOverlay input {
+      width: 140px;
+      padding: 14px;
+      font-size: 24px;
+      font-weight: 600;
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      margin: 6px;
+      background: #1a1a1a;
+      color: #fff;
+      transition: all 0.2s;
+    }
+
+    #numberOverlay input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+    }
+
+    #numberOverlay button {
+      margin-top: 16px;
+      padding: 14px 36px;
+      font-size: 20px;
+      font-weight: 600;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #numberOverlay button:hover {
+      background: linear-gradient(135deg, #353535 0%, #2a2a2a 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    #numberOverlay button:active {
+      transform: translateY(0);
+    }
+
+    #listPage {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .listSection {
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, rgba(30, 30, 30, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .sectionTitle {
+      font-size: 20px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .item {
+      padding: 12px;
+      margin: 8px 0;
+      background: linear-gradient(135deg, rgba(40, 40, 40, 0.6) 0%, rgba(30, 30, 30, 0.6) 100%);
+      border-radius: 14px;
+      font-size: clamp(14px, 4vw, 17px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+
+    .item:hover {
+      background: linear-gradient(135deg, rgba(45, 45, 45, 0.7) 0%, rgba(35, 35, 35, 0.7) 100%);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .delete {
+      background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 2px 10px rgba(183, 28, 28, 0.3);
+    }
+
+    .delete:hover { 
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(183, 28, 28, 0.5);
+    }
+    .delete:active { 
+      transform: scale(0.95);
+    }
+
+    #listClose {
+      margin-top: 16px;
+      align-self: center;
+      padding: 14px 36px;
+      font-size: 20px;
+      font-weight: 600;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #listClose:hover {
+      background: linear-gradient(135deg, #353535 0%, #2a2a2a 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    #listClose:active {
+      transform: translateY(0);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+<div id="buttons"></div>
+
+<div id="bottombar">
+  <button class="barBtn back" onclick="goBack()">Zurück</button>
+  <button class="barBtn" onclick="toggleList()">📝 Liste</button>
+</div>
+
+<div id="numberOverlay">
+  <div id="numberText"></div>
+  <input type="number" id="kaestenInput" placeholder="Kästen" min="0">
+  <input type="number" id="flaschenInput" placeholder="Flaschen" min="0">
+  <button onclick="confirmQuantities()">Bestätigen</button>
+</div>
+
+<div id="listPage"></div>
+
+<script>
+  const kundeSteps = [
+    { name: "Type", options: ["Leergut", "Neu"] }
+  ];
+
+  const kundeLeergutPreise = ["3,30€", "3,10€", "3,42€", "5,10€", "4,50€", "2,40€", "1,50€", "3,00€"];
+
+  const kundeNeuSteps = [
+    { name: "Material", options: ["Glas", "Plastik"] },
+    { name: "Typ", options: ["Medium", "Classic", "Still", "Zitrone"] },
+    { name: "Marke", options: ["Engelbert", "Stiftsquelle", "Gerolsteiner", "Heiligentaler", "Forstetal"] }
+  ];
+
+  const lagerSteps = [
+    { name: "Material", options: ["Glas", "Plastik"] },
+    { name: "Typ", options: ["Medium", "Classic", "Still", "Zitrone"] },
+    { name: "Marke", options: ["Engelbert", "Stiftsquelle", "Gerolsteiner", "Heiligentaler", "Forstetal"] }
+  ];
+
+  let mode = null;
+  let kundeSubMode = null;
+  let currentStep = 0;
+  let currentItem = {};
+  let kundeList = [];
+  let lagerList = [];
+  let currentIndex = null;
+
+  function init() {
+    mode = null;
+    kundeSubMode = null;
+    currentStep = 0;
+    currentItem = {};
+    renderModeSelection();
+  }
+
+  function renderModeSelection() {
+    document.getElementById("buttons").innerHTML = `
+      <button class='btn' onclick='selectMode("kunde")'>Kunde</button>
+      <button class='btn' onclick='selectMode("lager")'>Lager</button>
+    `;
+  }
+
+  function selectMode(m) {
+    mode = m;
+    currentStep = 0;
+    currentItem = { mode: mode };
+    
+    if (mode === "kunde") {
+      renderKundeTypeSelection();
+    } else {
+      renderLagerStep();
+    }
+  }
+
+  function renderKundeTypeSelection() {
+    document.getElementById("buttons").innerHTML = kundeSteps[0].options.map(opt => `
+      <button class='btn' onclick='selectKundeType("${opt}")'>${opt}</button>`).join("");
+  }
+
+  function selectKundeType(type) {
+    kundeSubMode = type.toLowerCase();
+    currentItem.Type = type;
+    
+    if (kundeSubMode === "leergut") {
+      renderKundeLeergutPreise();
+    } else {
+      currentStep = 0;
+      renderKundeNeuStep();
+    }
+  }
+
+  function renderKundeLeergutPreise() {
+    document.getElementById("buttons").innerHTML = kundeLeergutPreise.map(preis => `
+      <button class='btn' onclick='selectLeergutPreis("${preis}")'>${preis}</button>`).join("");
+  }
+
+  function selectLeergutPreis(preis) {
+    currentItem.Preis = preis;
+    currentItem.kaesten = 0;
+    currentItem.extraflaschen = 0;
+    kundeList.push({ ...currentItem });
+    currentIndex = kundeList.length - 1;
+    sortKundeList();
+    showNumberOverlay("kunde");
+  }
+
+  function renderKundeNeuStep() {
+    const step = kundeNeuSteps[currentStep];
+    document.getElementById("buttons").innerHTML = step.options.map(opt => `
+      <button class='btn' onclick='selectKundeNeuOption("${opt}")'>${opt}</button>`).join("");
+  }
+
+  function selectKundeNeuOption(opt) {
+    const key = kundeNeuSteps[currentStep].name;
+    currentItem[key] = opt;
+    currentStep++;
+
+    if (currentStep >= kundeNeuSteps.length) {
+      currentItem.kaesten = 0;
+      currentItem.extraflaschen = 0;
+      kundeList.push({ ...currentItem });
+      currentIndex = kundeList.length - 1;
+      currentStep = 0;
+      sortKundeList();
+      showNumberOverlay("kunde");
+    } else {
+      renderKundeNeuStep();
+    }
+  }
+
+  function renderLagerStep() {
+    const step = lagerSteps[currentStep];
+    document.getElementById("buttons").innerHTML = step.options.map(opt => `
+      <button class='btn' onclick='selectLagerOption("${opt}")'>${opt}</button>`).join("");
+  }
+
+  function selectLagerOption(opt) {
+    const key = lagerSteps[currentStep].name;
+    currentItem[key] = opt;
+    currentStep++;
+
+    if (currentStep >= lagerSteps.length) {
+      currentItem.kaesten = 0;
+      lagerList.push({ ...currentItem });
+      currentIndex = lagerList.length - 1;
+      currentStep = 0;
+      sortLagerList();
+      showNumberOverlay("lager");
+    } else {
+      renderLagerStep();
+    }
+  }
+
+  function showNumberOverlay(listType) {
+    const overlay = document.getElementById('numberOverlay');
+    const kaestenInput = document.getElementById('kaestenInput');
+    const flaschenInput = document.getElementById('flaschenInput');
+
+    const list = listType === "kunde" ? kundeList : lagerList;
+    const item = list[currentIndex];
+    
+    let text = '';
+    if (listType === "kunde" && item.Type === "Leergut") {
+      text = `Anzahl für ${item.Preis}`;
+    } else if (listType === "kunde") {
+      text = `Anzahl für ${item.Marke}`;
+    } else {
+      text = `Anzahl für ${item.Marke}`;
+    }
+    
+    document.getElementById('numberText').textContent = text;
+    kaestenInput.value = '';
+    flaschenInput.value = '';
+
+    if (listType === "lager") {
+      flaschenInput.style.display = 'none';
+    } else {
+      flaschenInput.style.display = 'block';
+    }
+
+    overlay.style.display = 'flex';
+    kaestenInput.focus();
+
+    function handleEnter(e) {
+      if(e.key === 'Enter') confirmQuantities();
+    }
+    kaestenInput.removeEventListener('keypress', handleEnter);
+    flaschenInput.removeEventListener('keypress', handleEnter);
+    kaestenInput.addEventListener('keypress', handleEnter);
+    flaschenInput.addEventListener('keypress', handleEnter);
+  }
+
+  function confirmQuantities() {
+    const kaesten = parseInt(document.getElementById('kaestenInput').value) || 0;
+    const flaschen = mode === "lager" ? 0 : (parseInt(document.getElementById('flaschenInput').value) || 0);
+    
+    const list = mode === "kunde" ? kundeList : lagerList;
+    list[currentIndex].kaesten = kaesten;
+    list[currentIndex].extraflaschen = flaschen;
+    
+    document.getElementById('numberOverlay').style.display = 'none';
+    currentItem = { mode: mode };
+    
+    if (mode === "kunde") {
+      if (kundeSubMode === "leergut") {
+        renderKundeLeergutPreise();
+      } else {
+        currentStep = 0;
+        renderKundeTypeSelection();
+      }
+    } else {
+      renderLagerStep();
+    }
+  }
+
+  function goBack() {
+    if (mode === null) {
+      return;
+    }
+    
+    if (mode === "kunde") {
+      if (kundeSubMode === "neu" && currentStep > 0) {
+        currentStep--;
+        renderKundeNeuStep();
+      } else if (kundeSubMode === "leergut") {
+        kundeSubMode = null;
+        currentItem = { mode: "kunde" };
+        renderKundeTypeSelection();
+      } else if (kundeSubMode === "neu") {
+        kundeSubMode = null;
+        currentItem = { mode: "kunde" };
+        renderKundeTypeSelection();
+      } else {
+        mode = null;
+        currentItem = {};
+        init();
+      }
+    } else if (mode === "lager") {
+      if (currentStep > 0) {
+        currentStep--;
+        renderLagerStep();
+      } else {
+        mode = null;
+        currentItem = {};
+        init();
+      }
+    }
+  }
+
+  function sortKundeList() {
+    kundeList.sort((a, b) => a.Type === "Leergut" ? -1 : 1);
+  }
+
+  function sortLagerList() {
+    // Keine spezielle Sortierung für Lager
+  }
+
+  function renderList() {
+    const page = document.getElementById("listPage");
+    let html = '';
+
+    if (kundeList.length) {
+      html += `<div class='listSection'><div class='sectionTitle' style='font-size: 26px; margin-bottom: 16px;'>KUNDE</div>`;
+      
+      const kundeLeergut = kundeList.filter(i => i.Type === 'Leergut');
+      const kundeNeu = kundeList.filter(i => i.Type === 'Neu');
+      
+      if (kundeLeergut.length) {
+        html += `<div style='margin-bottom: 16px;'><div class='sectionTitle' style='font-size: 18px;'>Leergut</div>`;
+        kundeLeergut.forEach((item) => {
+          html += `<div class='item'><span>${item.Preis} - ${item.kaesten} Kästen + ${item.extraflaschen} Flaschen</span><button class='delete' onclick='deleteKundeItem(${kundeList.indexOf(item)})'>Löschen</button></div>`;
+        });
+        html += `</div>`;
+      }
+      
+      if (kundeNeu.length) {
+        html += `<div><div class='sectionTitle' style='font-size: 18px;'>Neu</div>`;
+        kundeNeu.forEach((item) => {
+          html += `<div class='item'><span>${item.Material} / ${item.Typ} / ${item.Marke} - ${item.kaesten} Kästen + ${item.extraflaschen} Flaschen</span><button class='delete' onclick='deleteKundeItem(${kundeList.indexOf(item)})'>Löschen</button></div>`;
+        });
+        html += `</div>`;
+      }
+      
+      html += `</div>`;
+    }
+
+    if (lagerList.length) {
+      html += `<div class='listSection'><div class='sectionTitle' style='font-size: 26px; margin-bottom: 16px;'>LAGER</div>`;
+      lagerList.forEach((item) => {
+        html += `<div class='item'><span>${item.Material} / ${item.Typ} / ${item.Marke} - ${item.kaesten} Kästen</span><button class='delete' onclick='deleteLagerItem(${lagerList.indexOf(item)})'>Löschen</button></div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `<button id='listClose' onclick='toggleList()'>✖ Schließen</button>`;
+    page.innerHTML = html;
+  }
+
+  function deleteKundeItem(i) {
+    kundeList.splice(i, 1);
+    sortKundeList();
+    renderList();
+  }
+
+  function deleteLagerItem(i) {
+    lagerList.splice(i, 1);
+    renderList();
+  }
+
+  function toggleList() {
+    const page = document.getElementById("listPage");
+    if (page.style.display === "flex") {
+      page.style.display = "none";
+    } else {
+      page.style.display = "flex";
+      renderList();
+    }
+  }
+
+  init();
+</script>
+
+</body>
+</html>
